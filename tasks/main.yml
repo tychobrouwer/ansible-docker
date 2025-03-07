@@ -21,6 +21,25 @@
     mode: "0755"
     owner: root
     group: root
+  when: authelia_enabled
+
+- name: Ensure templates are deployed on remote
+  ansible.builtin.template:
+    src: "{{ portainer_authelia_config_template }}"
+    dest: /root/authelia-config/configuration.yaml
+    mode: "0644"
+    owner: root
+    group: root
+  when: authelia_enabled
+
+- name: Ensure templates are deployed on remote
+  ansible.builtin.template:
+    src: "{{ portainer_dashy_config_template }}"
+    dest: /root/dashy-conf.yaml
+    mode: "0644"
+    owner: root
+    group: root
+  when: dashy_enabled
 
 - name: Ensure templates are deployed on remote
   ansible.builtin.template:
@@ -30,8 +49,10 @@
     owner: root
     group: root
   loop:
-    - { src: "{{ portainer_authelia_config_template }}", dest: /root/authelia-config/configuration.yaml }
-    - { src: "{{ portainer_dashy_config_template }}", dest: /root/dashy-conf.yaml }
+    - { src: "{{ portainer_traefik_dynamic_template }}", dest: /root/traefik-dynamic.yaml }
+    - { src: "{{ portainer_traefik_static_template }}", dest: /root/traefik-static.yaml }
+  when: traefik_enabled
+  notify: restart traefik
 
 - name: Install Docker
   ansible.builtin.include_tasks: docker.yml
@@ -43,6 +64,10 @@
 - name: Install Portainer container
   ansible.builtin.include_tasks: portainer.yml
   when: portainer_enabled
+
+- name: Install Traefik container
+  ansible.builtin.include_tasks: traefik.yml
+  when: traefik_enabled
 
 - name: Install Dashy container
   ansible.builtin.include_tasks: dashy.yml
