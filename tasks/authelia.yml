@@ -58,19 +58,6 @@
     owner: root
     group: root
 
-- name: Create files on remote
-  ansible.builtin.copy:
-    dest: "/root/authelia-config/{{ item.file }}"
-    content: "{{ item.content }}"
-    mode: "0600"
-    owner: root
-    group: root
-  with_items:
-    - { file: authelia_jwt_secret.key, content: "{{ portainer_authelia.jwt_secret }}" }
-    - { file: authelia_session_secret.key, content: "{{ portainer_authelia.session_secret }}" }
-    - { file: authelia_storage_secret.key, content: "{{ portainer_authelia.storage_secret }}" }
-    - { file: smtp_password.password, content: "{{ portainer_notifications.smtp_password }}" }
-
 - name: Ensure Authelia Docker container is running
   community.docker.docker_container:
     name: authelia
@@ -80,11 +67,6 @@
     command:
       - authelia
       - --config=/config/configuration.yaml
-    env:
-      AUTHELIA_JWT_SECRET_FILE: /config/authelia_jwt_secret.key
-      AUTHELIA_SESSION_SECRET_FILE: /config/authelia_session_secret.key
-      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /config/authelia_storage_secret.key
-      AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE: /config/smtp_password.password
     restart_policy: unless-stopped
     ports:
       - "9091:9091"
